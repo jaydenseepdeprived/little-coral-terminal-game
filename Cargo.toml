@@ -1,0 +1,42 @@
+[package]
+name = "coral-game"
+version = "0.2.0"
+edition = "2021"
+authors = ["Group A — Terminal Game Jam"]
+description = "ASCII-art coral reef planting game, built on the ruscii terminal engine"
+
+# ---------------------------------------------------------------------------
+# This is the Ruscii port the design slides originally called for
+# ("Rust using Ruscii"). Ruscii owns the alternate screen, the render loop,
+# raw-mode setup/teardown, and keyboard polling, so we no longer manage any of
+# that ourselves (the previous crossterm-based Game/View/Controller are gone).
+#
+# What ruscii gives us, and how this game uses it:
+#   * App::run(|state, window| ...) — the frame loop. We do input + update +
+#     draw inside the closure each frame.
+#   * State::keyboard().last_key_events() — per-frame key press/release events.
+#   * State::step() — a monotonically increasing tick counter we reuse as the
+#     game's "frames" value and to pace the slow life/disease updates.
+#   * Window::canvas_mut() + Pencil — the drawing surface. Pencil gives
+#     draw_char / draw_text / draw_rect and per-call foreground colour, which
+#     finally lets us render the slide's spec: healthy coral in rainbow
+#     (Color::Xterm) and unhealthy coral in white.
+#
+# ruscii 0.4 pulls in crossterm 0.26 and device_query transitively; we don't
+# depend on them directly.
+# ---------------------------------------------------------------------------
+
+[dependencies]
+ruscii = "0.4"
+# Used for random coral-stamp selection, spawn placement, and disease seeding.
+# ruscii already pulls rand in transitively; we depend on it directly so our
+# use of it is explicit and version-pinned to the same major release.
+rand = "0.8"
+
+[[bin]]
+name = "coral-game"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
